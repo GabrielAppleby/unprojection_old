@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  db_unprojection:
+    environment:
+      - POSTGRES_USER=dev_user
+      - POSTGRES_PASSWORD=dev_pass
+      - POSTGRES_DB=dev_db
+    healthcheck:
+      test: pg_isready -U dev_user -d dev_db
+      interval: 10s
+      timeout: 3s
+      retries: 3
+  db_data_unprojection:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile-db_setup
+    env_file: ./backend/.env
+    depends_on:
+      db_unprojection:
+        condition: service_healthy
+    command: bash -c "pg_restore -h db_unprojection -p 5432 -d dev_db -U dev_user -w -O latest.dump"
+  backend_unprojection:
+    build:
+      dockerfile: Dockerfile-servers.prod
+    env_file: ./backend/.env 
+    command: ["gunicorn", "--bind", "0.0.0.0:5000", "app:application"]
+    expose:
+      - 5000
+  frontend_unprojection:
+    build:
+      dockerfile: Dockerfile.prod
+    ports:
+      - 3000:80
+

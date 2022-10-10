@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  db_unprojection:
+    image: postgres
+    env_file: ./backend/.env
+    expose:
+      - 5432
+  backend_unprojection:
+    build:
+      context: ./backend
+    depends_on:
+      - db_unprojection
+  frontend_unprojection:
+    build:
+      context: ./frontend
+    depends_on:
+      - backend_unprojection
+      - db_unprojection

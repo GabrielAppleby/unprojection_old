@@ -1,0 +1,17 @@
+FROM postgres
+
+RUN groupadd -r flaskg
+RUN useradd --no-log-init -r -g flaskg flask
+
+RUN apt-get update
+RUN apt-get -yq upgrade
+RUN apt-get -yq install gcc musl-dev linux-headers-amd64
+RUN apt-get clean
+
+COPY latest.dump /usr/latest.dump
+
+RUN chown -R flask:flaskg /usr/latest.dump
+
+WORKDIR /usr/
+
+USER flask
